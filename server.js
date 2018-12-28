@@ -10,8 +10,8 @@ var runner            = require('./test-runner');
 
 var app = express();
 
-// TODO: Nothing from my website will be cached in my client as a security measure.
-// TODO: I will see that the site is powered by 'PHP 4.2.0' even though it isn't as a security measure.
+app.use(require('helmet').noCache())
+app.use(require('helmet').hidePoweredBy({ setTo: 'PHP 4.2.0' }))
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
