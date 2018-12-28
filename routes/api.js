@@ -10,7 +10,7 @@
 
 var expect = require('chai').expect;
 var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectId;
+var ObjectId = require('mongodb').ObjectID;
 const MONGODB_CONNECTION_STRING = process.env.MONGOLAB_URI;
 //Example connection: MongoClient.connect(MONGODB_CONNECTION_STRING, function(err, db) {});
 
@@ -19,6 +19,14 @@ module.exports = function (app) {
   app.route('/api/books')
     .get(function (req, res){
       // TODO: I can get /api/books to retrieve an aray of all books containing title, _id, & commentcount.
+      MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection("books")
+        .find({}).toArray().then( docs => {
+          // TODO: Implement commentcount
+          res.json(docs.map(doc => Object.assign(doc, { commentcount: 0 }))) // hardcoded commentcount
+        })
+      })
       //response will be array of book objects
       //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
     })
@@ -48,7 +56,18 @@ module.exports = function (app) {
       // TODO: I can get /api/books/{_id} to retrieve a single object of a book containing title, _id, & an array of comments (empty array if no comments present).
       // TODO: If I try to request a book that doesn't exist I will get a 'no book exists' message.
       var bookid = req.params.id;
-      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+      if (bookid.length !== 24) res.json({ error: 'Invalid book id.' })
+      bookid = new ObjectId(bookid)
+      MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection("books")
+          .findOne({ _id: bookid })
+          .then(doc => {
+            if (!doc) res.json({ error: 'Invalid book id.' })
+            else res.json(doc)
+          })
+          .catch(err => res.json({ error: 'Invalid book id.' }))
+        })
     })
     
     .post(function(req, res){
