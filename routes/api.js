@@ -24,9 +24,16 @@ module.exports = function (app) {
     })
     
     .post(function (req, res){
-      // TODO: I can post a title to /api/books to add a book and returned will be the object with the title and a unique _id.
       var title = req.body.title;
-      //response will contain new book object including atleast _id and title
+      if (!title) res.json({ error: 'No title provided.' })
+      else MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection("books")
+        .insertOne({ title })
+        .then( doc => {
+          res.json({ _id: doc.insertedId, title })
+        })
+      })
     })
     
     .delete(function(req, res){
