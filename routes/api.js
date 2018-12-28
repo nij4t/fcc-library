@@ -12,23 +12,18 @@ var expect = require('chai').expect;
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
 const MONGODB_CONNECTION_STRING = process.env.MONGOLAB_URI;
-//Example connection: MongoClient.connect(MONGODB_CONNECTION_STRING, function(err, db) {});
 
 module.exports = function (app) {
 
   app.route('/api/books')
     .get(function (req, res){
-      // TODO: I can get /api/books to retrieve an aray of all books containing title, _id, & commentcount.
       MongoClient.connect(MONGODB_CONNECTION_STRING)
       .then(db => {
         db.collection("books")
         .find({}).toArray().then( docs => {
-          // TODO: Implement commentcount
-          res.json(docs.map(doc => Object.assign(doc, { commentcount: 0 }))) // hardcoded commentcount
+          res.json(docs.map(doc => { return { _id: doc._id, title: doc.title, commentcount: doc.comments.length } } ))
         })
       })
-      //response will be array of book objects
-      //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
     })
     
     .post(function (req, res){
@@ -36,10 +31,11 @@ module.exports = function (app) {
       if (!title) res.json({ error: 'No title provided.' })
       else MongoClient.connect(MONGODB_CONNECTION_STRING)
       .then(db => {
+        const comments = []
         db.collection("books")
-        .insertOne({ title })
+        .insertOne({ title, comments })
         .then( doc => {
-          res.json({ _id: doc.insertedId, title })
+          res.json({ _id: doc.insertedId, title, comments })
         })
       })
     })
@@ -68,6 +64,7 @@ module.exports = function (app) {
           })
           .catch(err => res.json({ error: 'Invalid book id.' }))
         })
+        //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
     })
     
     .post(function(req, res){
