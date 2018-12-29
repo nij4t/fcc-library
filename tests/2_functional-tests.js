@@ -116,7 +116,33 @@ suite('Functional Tests', function() {
     suite('POST /api/books/[id] => add comment/expect book object with id', function(){
       
       test('Test POST /api/books/[id] with comment', function(done){
-        //done();
+        chai.request(server)
+        .post('/api/books/'+_id1)
+        .send({ comment: 'test comment' })
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.isObject(res.body);
+          assert.property(res.body, '_id')
+          assert.property(res.body, 'title')
+          assert.property(res.body, 'comments')
+          assert.isArray(res.body.comments);
+          assert.equal(res.body._id, _id1)
+          assert.equal(res.body.title, 'Test Book Title')
+          assert.equal(res.body.comments[0], 'test comment')
+          done();
+        })
+      });
+
+      test('Test POST /api/books/[id] with comment using invalid id', function(done){
+        chai.request(server)
+        .post('/api/books/invalidId')
+        .send({ comment: 'test comment' })
+        .end(function(err, res){
+          assert.equal(res.status, 200);
+          assert.isObject(res.body);
+          assert.property(res.body, 'error')
+          done();
+        })
       });
       
     });
