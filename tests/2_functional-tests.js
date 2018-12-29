@@ -175,6 +175,17 @@ suite('Functional Tests', function() {
 
     suite('DELETE /api/books => delete all existing books', () => {
 
+      test('Test DELETE /api/books', done => {
+        chai.request(server)
+        .delete('/api/books')
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isObject(res.body);
+          assert.property(res.body, 'success');
+          done();
+        })
+      });
+
     });
 
   });
