@@ -140,11 +140,41 @@ suite('Functional Tests', function() {
         .end(function(err, res){
           assert.equal(res.status, 200);
           assert.isObject(res.body);
-          assert.property(res.body, 'error')
+          assert.property(res.body, 'error');
           done();
         })
       });
       
+    });
+
+    suite('DELETE /api/books/[id] => delete book with id', () => {
+      
+      test('Test DELETE /api/books/[id] with valid id', done => {
+        chai.request(server)
+        .delete('/api/books/'+_id1)
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isObject(res.body);
+          assert.property(res.body, 'success');
+          done();
+        })
+      });
+
+      test('Test DELETE /api/books/[id] with invalid id', done => {
+        chai.request(server)
+        .delete('/api/books/invalid_id')
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isObject(res.body);
+          assert.property(res.body, 'error');
+          done();
+        })
+      });
+
+    });
+
+    suite('DELETE /api/books => delete all existing books', () => {
+
     });
 
   });
