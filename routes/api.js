@@ -49,8 +49,6 @@ module.exports = function (app) {
 
   app.route('/api/books/:id')
     .get(function (req, res){
-      // TODO: I can get /api/books/{_id} to retrieve a single object of a book containing title, _id, & an array of comments (empty array if no comments present).
-      // TODO: If I try to request a book that doesn't exist I will get a 'no book exists' message.
       var bookid = req.params.id;
       if (bookid.length !== 24) res.json({ error: 'Invalid book id.' })
       bookid = new ObjectId(bookid)
@@ -64,14 +62,22 @@ module.exports = function (app) {
           })
           .catch(err => res.json({ error: 'Invalid book id.' }))
         })
-        //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
     })
     
     .post(function(req, res){
-      // TODO: I can post a comment to /api/books/{_id} to add a comment to a book and returned will be the books object similar to get /api/books/{_id}.
       var bookid = req.params.id;
       var comment = req.body.comment;
-      //json res format same as .get
+      if (bookid.length !== 24) res.json({ error: 'Invalid book id.' })
+      bookid = new ObjectId(bookid)
+      MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection('books')
+        .update({ _id: bookid }, { $push: { comments: comment } })
+        .then(doc => {
+          res.redirect('/api/books/'+req.params.id)
+        })
+        .catch(err => res.json(err))
+      })
     })
     
     .delete(function(req, res){
