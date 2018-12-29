@@ -81,9 +81,19 @@ module.exports = function (app) {
     })
     
     .delete(function(req, res){
-      // TODO: I can delete /api/books/{_id} to delete a book from the collection. Returned will be 'delete successful' if successful.
       var bookid = req.params.id;
-      //if successful response will be 'delete successful'
+      if (bookid.length !== 24) res.json({ error: 'Invalid book id.' })
+      bookid = new ObjectId(bookid)
+      MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection('books').remove({ _id: bookid })
+        .then(doc => {
+          res.json({ success: 'delete successful' })
+        })
+        .catch(err => {
+          res.json({ error: err })
+        })
+      })
     });
   
 };
