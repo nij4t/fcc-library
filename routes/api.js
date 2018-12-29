@@ -41,8 +41,16 @@ module.exports = function (app) {
     })
     
     .delete(function(req, res){
-      // TODO: I can send a delete request to /api/books to delete all books in the database. Returned will be 'complete delete successful' if successful.
-      //if successful response will be 'complete delete successful'
+      MongoClient.connect(MONGODB_CONNECTION_STRING)
+      .then(db => {
+        db.collection('books').remove({})
+        .then(doc => {
+          res.json({ success: 'complete delete successful' })
+        })
+        .catch(err => {
+          res.json({ error: err })
+        })
+      })
     });
 
 
